@@ -1,0 +1,79 @@
+1.
+SELECT customers.LastName, customers.FirstName
+FROM customers
+WHERE customers.City = "Prague";
+
+2.
+SELECT customers.LastName, customers.FirstName
+FROM customers
+WHERE SUBSTRING(FirstName, 1, 1) = "M";
+
+3.
+SELECT tracks.Name, tracks.Bytes / 1000000
+FROM tracks;
+
+4.
+SELECT employees.LastName, employees.FirstName
+FROM employees
+WHERE  City = "Calgary" AND employees.HireDate BETWEEN "2002-01-01" AND "2002-12-31";
+
+5.
+SELECT employees.LastName, employees.FirstName
+FROM employees
+WHERE date(HireDate) - date(BirthDate) > 40;
+
+6.
+SELECT *
+FROM customers
+WHERE customers.Country = "USA" AND Fax IS NULL;
+
+7.
+SELECT ShipCity
+FROM sales
+WHERE ShipCountry = "Canada" AND (SUBSTRING(SalesDate, 6, 2) = "08" OR SUBSTRING(SalesDate, 6, 2) = "09");
+
+8.
+SELECT Email
+FROM customers
+WHERE Email LIKE "%gmail.com";
+
+9.
+SELECT *
+FROM employees
+WHERE date("now") - date(HireDate) > 18;
+
+10.
+SELECT Title
+FROM employees
+ORDER BY Title;
+
+11.
+SELECT FirstName, LastName, date('now') - Age
+FROM customers
+ORDER BY FirstName, LastName, date('now') - Age;
+
+12.
+SELECT CAST(min(Milliseconds) as REAL) / 1000
+FROM tracks;
+
+13.
+SELECT Name, CAST(min(Milliseconds) as REAL) / 1000
+FROM tracks
+WHERE Milliseconds = (
+    SELECT min(Milliseconds)
+    FROM tracks
+);
+
+14.
+SELECT Country, Age
+FROM customers
+GROUP BY Country;
+
+15.
+SELECT LastName
+FROM employees
+WHERE strftime('%m', HireDate) = "10";
+
+16.
+SELECT max(date('now') - date(HireDate))
+FROM employees;
