@@ -1,0 +1,106 @@
+1.
+Джойн.
+SELECT sum(sales_items.UnitPrice * sales_items.Quantity)
+FROM sales CROSS JOIN sales_items ON sales.SalesId = sales_items.SalesId 
+WHERE sales.ShipCountry = "USA" AND (date(sales.SalesDate) BETWEEN date('2012-01-01') AND date('2012-03-31'));
+
+Подзапрос.
+SELECT sum(sales_items.UnitPrice * sales_items.Quantity)
+FROM sales_items
+WHERE (sales_items.SalesId IN (
+    SELECT sales.SalesId
+    FROM sales
+    WHERE sales.shipCountry = "USA" AND (date(sales.SalesDate) BETWEEN date('2012-01-01') AND date('2012-03-31')) AND sales.SalesId IN (
+        SELECT sales_items.SalesId
+        FROM sales_items
+        WHERE sales.SalesId = sales_items.SalesId
+    )
+));
+
+
+2.
+Джойн.
+SELECT customers.FirstName
+FROM customers 
+WHERE customers.FirstName NOT IN (
+    SELECT customers.FirstName
+    FROM customers INNER JOIN employees
+    WHERE customers.FirstName = employees.FirstName
+)
+GROUP BY customers.FirstName;
+
+Логическое вычитание.
+SELECT customers.FirstName
+FROM customers
+GROUP BY customers.FirstName
+EXCEPT SELECT employees.FirstName
+	   FROM employees;
+
+Подзапрос.
+SELECT customers.FirstName
+FROM customers
+WHERE (customers.FirstName not in (
+    SELECT employees.FirstName
+    FROM employees)
+    )
+GROUP BY customers.FirstName;
+
+
+3.
+В первой случае вернут только строки удовлетворяющие условию,
+а во втором случае может получится ситуация,
+когда у столбцов разные размеры, и тогда можно получить результат большей длины,
+поскольку AND будет учитывать длины наибольшего столбца (недостающие дополнятся NULL-ом)
+
+
+4.
+Джоин.
+SELECT albums.Title, count(*) AS Quantity
+FROM albums LEFT JOIN tracks ON albums.AlbumId = tracks.AlbumId
+GROUP BY albums.Title
+ORDER BY albums.Title;
+
+Подзапрос.
+SELECT Title, (
+    SELECT count(*)
+    FROM tracks
+    WHERE tracks.AlbumId = a.AlbumId
+    GROUP BY tracks.AlbumId) AS Quantity
+FROM albums AS a
+ORDER BY Title;
+
+
+5.
+SELECT customers.LastName, customers.FirstName
+FROM customers CROSS JOIN sales ON sales.CustomerId = customers.CustomerId
+WHERE customers.Country = "Germany" AND sales.ShipCity = "Berlin" AND date(sales.SalesDate) BETWEEN date('2009-01-01') AND date('2009-12-31');
+
+
+6.
+Джойн.
+SELECT LastName
+FROM customers LEFT JOIN sales LEFT JOIN sales_items ON customers.CustomerId = sales.CustomerId AND sales.SalesId = sales_items.SalesId
+GROUP BY customers.CustomerId
+HAVING sum(sales_items.Quantity) > 30;
+
+Подзапрос.
+SELECT LastName
+FROM customers, sales, sales_items
+WHERE customers.CustomerId = sales.CustomerId AND sales.SalesId = sales_items.SalesId
+GROUP BY customers.CustomerId
+HAVING sum(sales_items.Quantity) > 30;
+
+
+7.
+SELECT genres.Name, sum(tracks.UnitPrice) / count(*) AS Price
+FROM genres CROSS JOIN tracks ON genres.GenreId = tracks.GenreId
+GROUP BY genres.GenreId;
+
+
+8.
+SELECT (SELECT genres.Name 
+	FROM genres 
+	WHERE tracks.GenreId = genres.GenreId) 
+FROM tracks 
+GROUP BY tracks.GenreId 
+HAVING avg(tracks.unitPrice) > 1
